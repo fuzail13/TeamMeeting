@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wordle – FRIDGE Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 40px;
+            background: #f0f0f0;
+        }
+        h1 { margin-bottom: 20px; }
+        .input-box { margin-top: 20px; display: flex; gap: 10px; align-items: center; }
+        .letter-input {
+            width: 40px; height: 40px;
+            font-size: 22px; text-align: center;
+            text-transform: uppercase;
+        }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        #result { margin-top: 25px; font-size: 22px; font-weight: bold; }
+        .celebrate { font-size: 32px; color: green; animation: pop 0.3s ease-in-out infinite alternate; }
+        @keyframes pop { from{transform:scale(1);} to{transform:scale(1.2);} }
+
+        .letter-box {
+            display: inline-block; width: 40px; height: 40px;
+            margin: 5px; line-height: 40px;
+            font-size: 22px; font-weight: bold;
+            text-align: center; border-radius: 6px; color: white;
+        }
+        .correct { background: #4caf50; }
+        .present { background: #ff9800; }
+        .absent { background: #9e9e9e; }
+    </style>
+</head>
+<body>
+
+    <h1>Hunt For The Word!!</h1>
+
+    <h2>Hints</h2>
+    <ul id="hints-list"></ul>
+
+    <div class="input-box">
+        <div id="letter-boxes" style="display:flex; gap:8px;"></div>
+        <button onclick="submitGuess()">Submit</button>
+    </div>
+
+    <div id="result"></div>
+
+    <script>
+        const ANSWER = "FRIDGE";
+
+        // Hints Array
+        const hints = [
+            "This Letter is common in both 'Friend' and 'Foe'",
+            "This is the first letter of an action we do for any glitch in phone/laptop device",
+            "You can name your country with this letter.",
+            "This is the first letter of the south indian dish and the fourth letter of the final word.",
+            "This is the first letter of the opposite of 'come'.",
+            "Beginning of the END and common in both 'Friend' and 'Foe'."
+        ];
+
+        function loadHints() {
+            const shuffled = hints.sort(() => Math.random() - 0.5);
+            const list = document.getElementById('hints-list');
+            shuffled.forEach(h => {
+                const li = document.createElement('li');
+                li.textContent = h;
+                list.appendChild(li);
+            });
+        }
+        loadHints();
+
+        // Create 6 boxes
+        function createInputBoxes() {
+            const container = document.getElementById('letter-boxes');
+            for (let i = 0; i < 6; i++) {
+                const inp = document.createElement('input');
+                inp.maxLength = 1;
+                inp.className = "letter-input";
+
+                // Auto move to next box
+                inp.addEventListener("input", () => {
+                    if (inp.value && i < 5) container.children[i + 1].focus();
+                });
+
+                container.appendChild(inp);
+            }
+        }
+        createInputBoxes();
+
+        // Handle Submit Button
+        function submitGuess() {
+            const boxes = document.querySelectorAll('#letter-boxes input');
+            let guess = "";
+
+            for (let b of boxes) {
+                if (!b.value) { 
+                    document.getElementById("result").innerHTML = "❗ Please fill all 6 letters."; 
+                    return;
+                }
+                guess += b.value.toUpperCase();
+            }
+
+            checkWord(guess);
+        }
+
+        // Wordle Logic
+        function checkWord(guess) {
+            const resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = "";
+
+            if (guess === ANSWER) {
+                resultDiv.innerHTML = "🎉 You are Correct! Now Get The Cake! 🎉";
+                resultDiv.className = "celebrate";
+                return;
+            }
+
+            resultDiv.className = "";
+
+            let display = "";
+            for (let i = 0; i < 6; i++) {
+                const letter = guess[i];
+                let boxClass = "absent";
+
+                if (letter === ANSWER[i]) {
+                    boxClass = "correct";
+                } else if (ANSWER.includes(letter)) {
+                    boxClass = "present";
+                }
+
+                display += `<div class='letter-box ${boxClass}'>${letter}</div>`;
+            }
+
+            resultDiv.innerHTML = display + "<br>❌ Not correct. Try again!";
+        }
+    </script>
+
+</body>
+</html>
+
